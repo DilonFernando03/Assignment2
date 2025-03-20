@@ -4,7 +4,11 @@ import static src.com.bayocode.TokenType.ADD;
 import static src.com.bayocode.TokenType.NOT_EQUAL;
 import static src.com.bayocode.TokenType.SUBTRACT;
 
-class Interpreter implements Expr.Visitor<Object> {
+import java.util.List;
+
+class Interpreter implements Expr.Visitor<Object>,
+                             Stmt.Visitor<Void> {
+  private Environment environment = new Environment();
   @Override
   public Object visitLiteralExpr(Expr.Literal expr) {
     return expr.value;
@@ -19,10 +23,66 @@ class Interpreter implements Expr.Visitor<Object> {
     return expr.accept(this);
   }
 
-  void interpret(Expr expression) { 
+  private void execute(Stmt stmt) {
+    stmt.accept(this);
+  }
+
+  void executeBlock(List<Stmt> statements,
+                    Environment environment) {
+    Environment previous = this.environment;
     try {
-      Object value = evaluate(expression);
-      System.out.println(stringify(value));
+      this.environment = environment;
+
+      for (Stmt statement : statements) {
+        execute(statement);
+      }
+    } finally {
+      this.environment = previous;
+    }
+  }
+
+  @Override
+  public Void visitBlockStmt(Stmt.Block stmt) {
+    executeBlock(stmt.statements, new Environment(environment));
+    return null;
+  }
+
+  @Override
+  public Void visitExpressionStmt(Stmt.Expression stmt) {
+    evaluate(stmt.expression);
+    return null;
+  }
+
+  @Override
+  public Void visitOutputStmt(Stmt.Output stmt) {
+    Object value = evaluate(stmt.expression);
+    System.out.println(stringify(value));
+    return null;
+  }
+
+  @Override
+  public Void visitSetStmt(Stmt.Set stmt) {
+    Object value = null;
+    if (stmt.initializer != null) {
+      value = evaluate(stmt.initializer);
+    }
+
+    environment.define(stmt.name.lexeme, value);
+    return null;
+  }
+
+  @Override
+  public Object visitAssignExpr(Expr.Assign expr) {
+    Object value = evaluate(expr.value);
+    environment.assign(expr.name, value);
+    return value;
+  }
+
+  void interpret(List<Stmt> statements) {
+    try {
+      for (Stmt statement : statements) {
+        execute(statement);
+      }
     } catch (RuntimeError error) {
       Lox.runtimeError(error);
     }
@@ -34,8 +94,61 @@ class Interpreter implements Expr.Visitor<Object> {
     Object right = evaluate(expr.right); 
 
     switch (expr.operator.type) {
-        case NOT_EQUAL: return !isEqual(left, right);
-        case EQUAL_EQUAL: return isEqual(left, right);
+        case NOT_EQUAL:
+              if (left instanceof String || right instanceof String) {
+                if (left instanceof Boolean || right instanceof Boolean) {
+                    Object converted = attemptTypeConversion(left, right);
+                    if (converted != null) {
+                        if (left instanceof String) {
+                            return !isEqual(converted, right);
+                        } else {
+                            return !isEqual(left, converted);
+                        }
+                    }
+                }
+                else if ((left instanceof Integer || left instanceof Double) || 
+                        (right instanceof Integer || right instanceof Double)) {
+                    Object converted = attemptTypeConversion(left, right);
+                    if (converted != null) {
+                        if (left instanceof String) {
+                            return !isEqual(converted, right);
+                        } else {
+                            return !isEqual(left, converted);
+                        }
+                    }
+                }
+            }
+            
+            return !isEqual(left, right);
+        case EQUAL_EQUAL: 
+            // Try type conversion first
+            if (left instanceof String || right instanceof String) {
+              if (left instanceof Boolean || right instanceof Boolean) {
+                  // Try converting string to boolean
+                  Object converted = attemptTypeConversion(left, right);
+                  if (converted != null) {
+                      if (left instanceof String) {
+                          return isEqual(converted, right);
+                      } else {
+                          return isEqual(left, converted);
+                      }
+                  }
+              }
+              else if ((left instanceof Integer || left instanceof Double) || 
+                      (right instanceof Integer || right instanceof Double)) {
+                  // Try converting string to number
+                  Object converted = attemptTypeConversion(left, right);
+                  if (converted != null) {
+                      if (left instanceof String) {
+                          return isEqual(converted, right);
+                      } else {
+                          return isEqual(left, converted);
+                      }
+                  }
+              }
+          }
+          
+          return isEqual(left, right);
         case GREATER:
             checkNumberOperands(expr.operator, left, right);
             return convertToDouble(left) > convertToDouble(right);
@@ -54,16 +167,31 @@ class Interpreter implements Expr.Visitor<Object> {
         case ADD:
             // If both are numbers (either INTEGER or FLOAT)
             if ((left instanceof Integer || left instanceof Double) && 
-                (right instanceof Integer || right instanceof Double)) {
-                return convertToDouble(left) + convertToDouble(right);
-            } 
+            (right instanceof Integer || right instanceof Double)) {
+            return convertToDouble(left) + convertToDouble(right);
+        } 
 
-            // If both are strings
-            if (left instanceof String && right instanceof String) {
-                return (String)left + (String)right;
+        // If one is a string that can be converted to a number
+        if (left instanceof String && (right instanceof Integer || right instanceof Double)) {
+            Object converted = tryStringToNumber((String)left);
+            if (converted != null) {
+                return convertToDouble(converted) + convertToDouble(right);
             }
-            throw new RuntimeError(expr.operator,
-                "Operands must be two numbers or two strings.");
+        }
+        else if (right instanceof String && (left instanceof Integer || left instanceof Double)) {
+            Object converted = tryStringToNumber((String)right);
+            if (converted != null) {
+                return convertToDouble(left) + convertToDouble(converted);
+            }
+        }
+
+        // If both are strings
+        if (left instanceof String && right instanceof String) {
+            return (String)left + (String)right;
+        }
+
+        throw new RuntimeError(expr.operator,
+            "Operands must be two numbers or two strings.");
         case SLASH:
             checkNumberOperands(expr.operator, left, right);
             if (convertToDouble(right) == 0) {
@@ -79,6 +207,50 @@ class Interpreter implements Expr.Visitor<Object> {
     return null;
     }
 
+    // Attempt to convert a string to a number
+    private Object tryStringToNumber(String str) {
+      try {
+          // Check if it's an integer
+          if (!str.contains(".")) {
+              return Integer.parseInt(str);
+          }
+          // Check if it's a float
+          return Double.parseDouble(str);
+      } catch (NumberFormatException e) {
+          return null; // Conversion failed
+      }
+    }
+
+    // Attempt to convert a string to a boolean
+    private Boolean tryStringToBoolean(String str) {
+      if (str.equalsIgnoreCase("true")) return true;
+      if (str.equalsIgnoreCase("false")) return false;
+      return null; // Conversion failed
+    }
+
+    // Try to convert strings to match the type of the other operand
+    private Object attemptTypeConversion(Object left, Object right) {
+      // If one is a string and one is a number
+      if (left instanceof String && (right instanceof Integer || right instanceof Double)) {
+          Object converted = tryStringToNumber((String)left);
+          if (converted != null) return converted;
+      }
+      else if (right instanceof String && (left instanceof Integer || left instanceof Double)) {
+          Object converted = tryStringToNumber((String)right);
+          if (converted != null) return converted;
+      }
+      // If one is a string and one is a boolean
+      else if (left instanceof String && right instanceof Boolean) {
+          Boolean converted = tryStringToBoolean((String)left);
+          if (converted != null) return converted;
+      }
+      else if (right instanceof String && left instanceof Boolean) {
+          Boolean converted = tryStringToBoolean((String)right);
+          if (converted != null) return converted;
+      }
+      
+      return null; // No conversion possible
+    }
     private double convertToDouble(Object obj) {
         if (obj instanceof Integer) {
             return ((Integer) obj).doubleValue();
@@ -116,6 +288,11 @@ class Interpreter implements Expr.Visitor<Object> {
     
       // Unreachable.
       return null;
+    }
+
+    @Override
+    public Object visitSetExpr(Expr.Set expr) {
+      return environment.get(expr.name);
     }
 
   private boolean isTruthy(Object object) {

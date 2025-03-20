@@ -26,12 +26,12 @@ class Scanner {
     keywords.put("if", IF);
     keywords.put("null", NULL);
     keywords.put("or", OR);
-    keywords.put("view", VIEW);
+    keywords.put("output", OUTPUT);
     keywords.put("return", RETURN);
     keywords.put("super", SUPER);
     keywords.put("this", THIS);
     keywords.put("true", TRUE);
-    keywords.put("var", VAR);
+    keywords.put("set", SET);
     keywords.put("while", WHILE);
   }
 
