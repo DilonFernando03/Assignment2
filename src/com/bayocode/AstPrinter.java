@@ -39,12 +39,17 @@ class AstPrinter implements Expr.Visitor<String> {
         return builder.toString();
       }
       @Override
-      public String visitSetExpr(Expr.Set expr) {
+      public String visitAssignVariableExpr(Expr.AssignVariable expr) {
           return expr.name.lexeme;
       }
       
       @Override
       public String visitAssignExpr(Expr.Assign expr) {
           return parenthesize("= " + expr.name.lexeme, expr.value);
+      }
+
+      @Override
+      public String visitLogicalExpr(Expr.Logical expr) {
+          return parenthesize(expr.operator.lexeme, expr.left, expr.right);
       }
 }

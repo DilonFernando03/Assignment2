@@ -31,8 +31,10 @@ class Scanner {
     keywords.put("super", SUPER);
     keywords.put("this", THIS);
     keywords.put("true", TRUE);
-    keywords.put("set", SET);
+    keywords.put("assign", ASSIGN);
     keywords.put("while", WHILE);
+    keywords.put("input", INPUT);
+
   }
 
   Scanner(String source) {

@@ -1,9 +1,5 @@
 package src.com.bayocode;
 
-import static src.com.bayocode.TokenType.ADD;
-import static src.com.bayocode.TokenType.NOT_EQUAL;
-import static src.com.bayocode.TokenType.SUBTRACT;
-
 import java.util.List;
 
 class Interpreter implements Expr.Visitor<Object>,
@@ -12,6 +8,19 @@ class Interpreter implements Expr.Visitor<Object>,
   @Override
   public Object visitLiteralExpr(Expr.Literal expr) {
     return expr.value;
+  }
+
+  @Override
+  public Object visitLogicalExpr(Expr.Logical expr) {
+    Object left = evaluate(expr.left);
+
+    if (expr.operator.type == TokenType.OR) {
+      if (isTruthy(left)) return left;
+    } else {
+      if (!isTruthy(left)) return left;
+    }
+
+    return evaluate(expr.right);
   }
 
   @Override
@@ -61,7 +70,37 @@ class Interpreter implements Expr.Visitor<Object>,
   }
 
   @Override
-  public Void visitSetStmt(Stmt.Set stmt) {
+  public Void visitInputStmt(Stmt.Input stmt) {
+    if (stmt.prompt != null) {
+      System.out.print(stmt.prompt.literal);
+    } else {
+      System.out.print("> ");
+    }
+    
+    //Read input
+    java.util.Scanner scanner = new java.util.Scanner(System.in);
+    String input = scanner.nextLine();
+    
+    try {
+      //Check if it's an integer
+      if (!input.contains(".")) {
+        environment.assign(stmt.name, Integer.parseInt(input));
+        return null;
+      }
+      //Check if it's a float
+      environment.assign(stmt.name, Double.parseDouble(input));
+      return null;
+    } catch (NumberFormatException e) {
+      //If not a number, store as string
+      environment.assign(stmt.name, input);
+    }
+    
+    return null;
+  }
+  
+
+  @Override
+  public Void visitAssignStmt(Stmt.Assign stmt) {
     Object value = null;
     if (stmt.initializer != null) {
       value = evaluate(stmt.initializer);
@@ -72,10 +111,28 @@ class Interpreter implements Expr.Visitor<Object>,
   }
 
   @Override
+  public Void visitWhileStmt(Stmt.While stmt) {
+  while (isTruthy(evaluate(stmt.condition))) {
+    execute(stmt.body);
+  }
+  return null;
+  }
+
+  @Override
   public Object visitAssignExpr(Expr.Assign expr) {
     Object value = evaluate(expr.value);
     environment.assign(expr.name, value);
     return value;
+  }
+
+  @Override
+  public Void visitIfStmt(Stmt.If stmt) {
+    if (isTruthy(evaluate(stmt.condition))) {
+      execute(stmt.thenBranch);
+    } else if (stmt.elseBranch != null) {
+      execute(stmt.elseBranch);
+    }
+    return null;
   }
 
   void interpret(List<Stmt> statements) {
@@ -291,7 +348,7 @@ class Interpreter implements Expr.Visitor<Object>,
     }
 
     @Override
-    public Object visitSetExpr(Expr.Set expr) {
+    public Object visitAssignVariableExpr(Expr.AssignVariable expr) {
       return environment.get(expr.name);
     }
 

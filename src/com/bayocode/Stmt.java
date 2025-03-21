@@ -6,8 +6,11 @@ abstract class Stmt {
   interface Visitor<R> {
     R visitBlockStmt(Block stmt);
     R visitExpressionStmt(Expression stmt);
+    R visitIfStmt(If stmt);
+    R visitInputStmt(Input stmt);
     R visitOutputStmt(Output stmt);
-    R visitSetStmt(Set stmt);
+    R visitAssignStmt(Assign stmt);
+    R visitWhileStmt(While stmt);
   }
   static class Block extends Stmt {
     Block(List<Stmt> statements) {
@@ -33,6 +36,36 @@ abstract class Stmt {
 
     final Expr expression;
   }
+  static class If extends Stmt {
+    If(Expr condition, Stmt thenBranch, Stmt elseBranch) {
+      this.condition = condition;
+      this.thenBranch = thenBranch;
+      this.elseBranch = elseBranch;
+    }
+
+    @Override
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitIfStmt(this);
+    }
+
+    final Expr condition;
+    final Stmt thenBranch;
+    final Stmt elseBranch;
+  }
+  static class Input extends Stmt {
+    Input(Token prompt, Token name) {
+      this.prompt = prompt;
+      this.name = name;
+    }
+
+    @Override
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitInputStmt(this);
+    }
+
+    final Token prompt;
+    final Token name;
+  }
   static class Output extends Stmt {
     Output(Expr expression) {
       this.expression = expression;
@@ -45,19 +78,33 @@ abstract class Stmt {
 
     final Expr expression;
   }
-  static class Set extends Stmt {
-    Set(Token name, Expr initializer) {
+  static class Assign extends Stmt {
+    Assign(Token name, Expr initializer) {
       this.name = name;
       this.initializer = initializer;
     }
 
     @Override
     <R> R accept(Visitor<R> visitor) {
-      return visitor.visitSetStmt(this);
+      return visitor.visitAssignStmt(this);
     }
 
     final Token name;
     final Expr initializer;
+  }
+  static class While extends Stmt {
+    While(Expr condition, Stmt body) {
+      this.condition = condition;
+      this.body = body;
+    }
+
+    @Override
+    <R> R accept(Visitor<R> visitor) {
+      return visitor.visitWhileStmt(this);
+    }
+
+    final Expr condition;
+    final Stmt body;
   }
 
   abstract <R> R accept(Visitor<R> visitor);

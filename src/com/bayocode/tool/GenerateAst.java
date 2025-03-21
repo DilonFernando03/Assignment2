@@ -17,14 +17,18 @@ public class GenerateAst {
       "Binary   : Expr left, Token operator, Expr right",
       "Grouping : Expr expression",
       "Literal  : Object value",
+      "Logical  : Expr left, Token operator, Expr right",
       "Unary    : Token operator, Expr right",
-      "Set      : Token name"
+      "AssignVariable      : Token name"
     ));
     defineAst(outputDir, "Stmt", Arrays.asList(
       "Block      : List<Stmt> statements",
       "Expression : Expr expression",
-      "Output      : Expr expression",
-      "Set        : Token name, Expr initializer"
+      "If         : Expr condition, Stmt thenBranch," + " Stmt elseBranch",
+      "Input      : Token prompt, Token name",
+      "Output     : Expr expression",
+      "Assign        : Token name, Expr initializer",
+      "While      : Expr condition, Stmt body"
     ));
   }
 
@@ -34,7 +38,7 @@ public class GenerateAst {
     String path = outputDir + "/" + baseName + ".java";
     PrintWriter writer = new PrintWriter(path, "UTF-8");
 
-    writer.println("package com.craftinginterpreters.lox;");
+    writer.println("package src.com.bayocode;");
     writer.println();
     writer.println("import java.util.List;");
     writer.println();

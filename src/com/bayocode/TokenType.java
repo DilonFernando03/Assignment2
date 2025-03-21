@@ -16,7 +16,7 @@ enum TokenType {
 
     // Keywords.
     AND, PROGRAM, ELSE, FALSE, FUN, FOR, IF, NULL, OR,
-    OUTPUT, RETURN, SUPER, THIS, TRUE, SET, WHILE,
+    OUTPUT, RETURN, SUPER, THIS, TRUE, ASSIGN, WHILE, INPUT,
 
     EOF
 }

@@ -1,0 +1,18 @@
+for (assign i = 1; i <= 5; i = i + 1) {
+  output "Multiplication table for ";
+  output i;
+  output ":";
+  
+  for (assign j = 1; j <= 10; j = j + 1) {
+    output "  ";
+    output i;
+    output " x ";
+    output j;
+    output " = ";
+    output i * j;
+  }
+  
+  output "";
+}
+
+output "All multiplication tables printed!";
