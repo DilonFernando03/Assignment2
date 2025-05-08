@@ -1,18 +1,18 @@
-for (assign i = 1; i <= 5; i = i + 1) {
-  output "Multiplication table for ";
-  output i;
-  output ":";
-  
-  for (assign j = 1; j <= 10; j = j + 1) {
-    output "  ";
-    output i;
-    output " x ";
-    output j;
-    output " = ";
-    output i * j;
-  }
-  
-  output "";
-}
+assign is_running = true;
+assign shopping_list = "";
+assign item = null;
 
-output "All multiplication tables printed!";
+while (is_running == true) {
+    input "add an item to the shoppping list: " item;
+
+    if (item == "") {
+        is_running = false;
+    }
+    else if (shopping_list == "") {
+        shopping_list = item;
+    }
+    else {
+        shopping_list = shopping_list + "," + item;
+    }
+}
+output shopping_list;

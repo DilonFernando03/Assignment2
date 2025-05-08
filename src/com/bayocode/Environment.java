@@ -7,6 +7,7 @@ class Environment {
   final Environment enclosing;
   private final Map<String, Boolean> initialized = new HashMap<>();
   private final Map<String, Object> values = new HashMap<>();
+  
   Environment() {
     enclosing = null;
   }
@@ -45,5 +46,24 @@ class Environment {
   void define(String name, Object value) {
     values.put(name, value);
     initialized.put(name, value != null);
+  }
+
+  Environment ancestor(int distance) {
+    Environment environment = this;
+    for (int i = 0; i < distance; i++) {
+      environment = environment.enclosing; 
+    }
+
+    return environment;
+  }
+
+  Object getAt(int distance, String name) {
+    return ancestor(distance).values.get(name);
+  }
+
+  void assignAt(int distance, Token name, Object value) {
+    Environment env = ancestor(distance);
+    env.values.put(name.lexeme, value);
+    env.initialized.put(name.lexeme, true);
   }
 }

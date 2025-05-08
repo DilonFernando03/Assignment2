@@ -1,10 +1,33 @@
 package src.com.bayocode;
-
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Map;
 
 class Interpreter implements Expr.Visitor<Object>,
                              Stmt.Visitor<Void> {
-  private Environment environment = new Environment();
+  final Environment globals = new Environment();
+  private final Map<Expr, Integer> locals = new HashMap<>();
+  private Environment environment = globals;
+  
+  Interpreter() {
+    globals.define("clock", new LoxCallable() {
+      @Override
+      public int arity() { return 0; }
+
+      @Override
+      public Object call(Interpreter interpreter,
+                         List<Object> arguments) {
+        return (double)System.currentTimeMillis() / 1000.0;
+      }
+
+      @Override
+      public String toString() { return "<native fn>"; }
+    });
+  }
+  
   @Override
   public Object visitLiteralExpr(Expr.Literal expr) {
     return expr.value;
@@ -36,6 +59,10 @@ class Interpreter implements Expr.Visitor<Object>,
     stmt.accept(this);
   }
 
+  void resolve(Expr expr, int depth) {
+    locals.put(expr, depth);
+  }
+
   void executeBlock(List<Stmt> statements,
                     Environment environment) {
     Environment previous = this.environment;
@@ -63,10 +90,25 @@ class Interpreter implements Expr.Visitor<Object>,
   }
 
   @Override
+  public Void visitFunctionStmt(Stmt.Function stmt) {
+    LoxFunction function = new LoxFunction(stmt, environment);
+    environment.define(stmt.name.lexeme, function);
+    return null;
+  }
+
+  @Override
   public Void visitOutputStmt(Stmt.Output stmt) {
     Object value = evaluate(stmt.expression);
     System.out.println(stringify(value));
     return null;
+  }
+
+  @Override
+  public Void visitReturnStmt(Stmt.Return stmt) {
+    Object value = null;
+    if (stmt.value != null) value = evaluate(stmt.value);
+
+    throw new Return(value);
   }
 
   @Override
@@ -121,7 +163,12 @@ class Interpreter implements Expr.Visitor<Object>,
   @Override
   public Object visitAssignExpr(Expr.Assign expr) {
     Object value = evaluate(expr.value);
-    environment.assign(expr.name, value);
+    Integer distance = locals.get(expr);
+    if (distance != null) {
+      environment.assignAt(distance, expr.name, value);
+    } else {
+      globals.assign(expr.name, value);
+    }
     return value;
   }
 
@@ -221,34 +268,36 @@ class Interpreter implements Expr.Visitor<Object>,
         case SUBTRACT:
             checkNumberOperands(expr.operator, left, right);
             return convertToDouble(left) - convertToDouble(right);
-        case ADD:
+            case ADD:
+            // Handle null values by converting them to string "null"
+            if (left == null && right instanceof String) {
+                return "null" + (String)right;
+            }
+            else if (right == null && left instanceof String) {
+                return (String)left + "null";
+            }
+            else if (left == null && right == null) {
+                return "nullnull";
+            }
+            
             // If both are numbers (either INTEGER or FLOAT)
             if ((left instanceof Integer || left instanceof Double) && 
-            (right instanceof Integer || right instanceof Double)) {
-            return convertToDouble(left) + convertToDouble(right);
-        } 
-
-        // If one is a string that can be converted to a number
-        if (left instanceof String && (right instanceof Integer || right instanceof Double)) {
-            Object converted = tryStringToNumber((String)left);
-            if (converted != null) {
-                return convertToDouble(converted) + convertToDouble(right);
+                (right instanceof Integer || right instanceof Double)) {
+                return convertToDouble(left) + convertToDouble(right);
+            } 
+        
+            // Convert everything to strings for string concatenation
+            if (left instanceof String || right instanceof String) {
+                // Convert left to string if it's not already
+                String leftStr = (left instanceof String) ? (String)left : stringify(left);
+                // Convert right to string if it's not already
+                String rightStr = (right instanceof String) ? (String)right : stringify(right);
+                
+                return leftStr + rightStr;
             }
-        }
-        else if (right instanceof String && (left instanceof Integer || left instanceof Double)) {
-            Object converted = tryStringToNumber((String)right);
-            if (converted != null) {
-                return convertToDouble(left) + convertToDouble(converted);
-            }
-        }
-
-        // If both are strings
-        if (left instanceof String && right instanceof String) {
-            return (String)left + (String)right;
-        }
-
-        throw new RuntimeError(expr.operator,
-            "Operands must be two numbers or two strings.");
+        
+            throw new RuntimeError(expr.operator,
+                "Operands must be two numbers or two strings.");
         case SLASH:
             checkNumberOperands(expr.operator, left, right);
             if (convertToDouble(right) == 0) {
@@ -263,6 +312,29 @@ class Interpreter implements Expr.Visitor<Object>,
     // Unreachable.
     return null;
     }
+
+    @Override
+  public Object visitCallExpr(Expr.Call expr) {
+    Object callee = evaluate(expr.callee);
+
+    List<Object> arguments = new ArrayList<>();
+    for (Expr argument : expr.arguments) { 
+      arguments.add(evaluate(argument));
+    }
+
+    if (!(callee instanceof LoxCallable)) {
+      throw new RuntimeError(expr.paren,
+          "Can only call functions and classes.");
+    }
+
+    LoxCallable function = (LoxCallable)callee;
+    if (arguments.size() != function.arity()) {
+      throw new RuntimeError(expr.paren, "Expected " +
+          function.arity() + " arguments but got " +
+          arguments.size() + ".");
+    }
+    return function.call(this, arguments);
+  }
 
     // Attempt to convert a string to a number
     private Object tryStringToNumber(String str) {
@@ -349,7 +421,16 @@ class Interpreter implements Expr.Visitor<Object>,
 
     @Override
     public Object visitAssignVariableExpr(Expr.AssignVariable expr) {
-      return environment.get(expr.name);
+      return lookUpVariable(expr.name, expr);
+    }
+
+    private Object lookUpVariable(Token name, Expr expr) {
+      Integer distance = locals.get(expr);
+      if (distance != null) {
+        return environment.getAt(distance, name.lexeme);
+      } else {
+        return globals.get(name);
+      }
     }
 
   private boolean isTruthy(Object object) {
@@ -366,16 +447,15 @@ class Interpreter implements Expr.Visitor<Object>,
   }
 
   private String stringify(Object object) {
-    if (object == null) return "nil";
+    if (object == null) return "null";
 
     if (object instanceof Double) {
-      String text = object.toString();
-      if (text.endsWith(".0")) {
-        text = text.substring(0, text.length() - 2);
-      }
-      return text;
+        String text = object.toString();
+        if (text.endsWith(".0")) {
+            text = text.substring(0, text.length() - 2);
+        }
+        return text;
     }
-
     return object.toString();
-  }
+}
 }

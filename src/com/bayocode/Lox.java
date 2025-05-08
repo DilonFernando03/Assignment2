@@ -52,7 +52,16 @@ public class Lox {
 
     // Stop if there was a syntax error.
     if (hadError) return;
-      interpreter.interpret(statements);
+
+    // First resolve variables to determine scope information
+    Resolver resolver = new Resolver(interpreter);
+    resolver.resolve(statements);
+    
+    // Stop if there was a resolution error
+    if (hadError) return;
+    
+    // Now interpret with the resolved variables
+    interpreter.interpret(statements);
   }
 
   static void error(int line, String message) {
