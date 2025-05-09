@@ -1,0 +1,21 @@
+assign i = 1;
+assign j;
+
+while (i <= 3) {
+    output "Outer loop iteration: ";
+    output i;
+    
+    // Reset inner loop counter
+    j = 1;
+    
+    while (j <= 3) {
+        output "  Inner loop iteration: ";
+        output j;
+        j = j + 1;
+    }
+    
+    i = i + 1;
+    output ""; // Empty line for better readability
+}
+
+output "All loops completed!";

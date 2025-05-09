@@ -1,0 +1,2 @@
+output "yes" or 2;
+output null or "yes";

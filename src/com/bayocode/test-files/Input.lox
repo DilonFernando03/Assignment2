@@ -1,0 +1,3 @@
+assign userName = null;
+input "Enter your name: " userName;
+output userName;

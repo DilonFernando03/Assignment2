@@ -11,7 +11,8 @@ class Interpreter implements Expr.Visitor<Object>,
   final Environment globals = new Environment();
   private final Map<Expr, Integer> locals = new HashMap<>();
   private Environment environment = globals;
-  
+  private final java.util.Scanner inputScanner = new java.util.Scanner(System.in);
+
   Interpreter() {
     globals.define("clock", new LoxCallable() {
       @Override
@@ -112,33 +113,49 @@ class Interpreter implements Expr.Visitor<Object>,
   }
 
   @Override
-  public Void visitInputStmt(Stmt.Input stmt) {
+public Void visitInputStmt(Stmt.Input stmt) {
     if (stmt.prompt != null) {
-      System.out.print(stmt.prompt.literal);
+        System.out.print(stmt.prompt.literal);
     } else {
-      System.out.print("> ");
+        System.out.print("> ");
     }
     
-    //Read input
-    java.util.Scanner scanner = new java.util.Scanner(System.in);
-    String input = scanner.nextLine();
+    String input;
+    try {
+        input = inputScanner.nextLine();
+    } catch (java.util.NoSuchElementException e) {
+        System.out.println("\nEnd of input detected.");
+        // Set empty string to trigger end of loop
+        input = "";
+    }
     
     try {
-      //Check if it's an integer
-      if (!input.contains(".")) {
-        environment.assign(stmt.name, Integer.parseInt(input));
-        return null;
-      }
-      //Check if it's a float
-      environment.assign(stmt.name, Double.parseDouble(input));
-      return null;
-    } catch (NumberFormatException e) {
-      //If not a number, store as string
-      environment.assign(stmt.name, input);
+        // Check if it's an integer
+        if (!input.contains(".")) {
+            try {
+                Integer value = Integer.parseInt(input);
+                environment.define(stmt.name.lexeme, value);
+                return null;
+            } catch (NumberFormatException e) {
+                // Not an integer, continue to other checks
+            }
+        }
+        // Check if it's a float
+        try {
+            Double value = Double.parseDouble(input);
+            environment.define(stmt.name.lexeme, value);
+            return null;
+        } catch (NumberFormatException e) {
+            // Not a number, store as string
+            environment.define(stmt.name.lexeme, input);
+        }
+    } catch (Exception e) {
+        // Any other exception, store empty string
+        environment.define(stmt.name.lexeme, "");
     }
     
     return null;
-  }
+}
   
 
   @Override
@@ -288,13 +305,13 @@ class Interpreter implements Expr.Visitor<Object>,
         
             // Convert everything to strings for string concatenation
             if (left instanceof String || right instanceof String) {
-                // Convert left to string if it's not already
-                String leftStr = (left instanceof String) ? (String)left : stringify(left);
-                // Convert right to string if it's not already
-                String rightStr = (right instanceof String) ? (String)right : stringify(right);
-                
-                return leftStr + rightStr;
-            }
+              // Convert left to string if it's not already
+              String leftStr = (left instanceof String) ? (String)left : stringify(left);
+              // Convert right to string if it's not already
+              String rightStr = (right instanceof String) ? (String)right : stringify(right);
+              
+              return leftStr + rightStr;
+          }
         
             throw new RuntimeError(expr.operator,
                 "Operands must be two numbers or two strings.");
