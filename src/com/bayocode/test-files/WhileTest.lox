@@ -1,5 +1,0 @@
-assign cars = 3;
-while (cars > 0 ) {
-    cars = cars - 1;
-    output cars;
-}

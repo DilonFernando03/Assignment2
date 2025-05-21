@@ -1,0 +1,128 @@
+output "===== CONTROL FLOW DEMONSTRATION =====";
+
+// Basic if statement
+assign temperature = 75;
+
+output "Temperature is " + temperature + "°F";
+if (temperature > 80) {
+    output "It's hot outside!";
+} 
+
+// If-else statement
+if (temperature > 80) {
+    output "It's hot outside!";
+} else {
+    output "The temperature is pleasant.";  // This will be printed
+}
+
+// If-else-if chains
+assign score = 85;
+
+output "Score is " + score;
+if (score >= 90) {
+    output "Grade: A";
+} else if (score >= 80) {
+    output "Grade: B";  // This will be printed
+} else if (score >= 70) {
+    output "Grade: C";
+} else if (score >= 60) {
+    output "Grade: D";
+} else {
+    output "Grade: F";
+}
+
+// Nested if statements
+assign age = 25;
+assign hasLicense = true;
+
+output "Age: " + age + ", Has License: " + hasLicense;
+if (age >= 16) {
+    output "Age requirement met for driving.";
+    
+    if (hasLicense) {
+        output "License check passed. You can drive.";
+    } else {
+        output "You need to get a license first.";
+    }
+} else {
+    output "You are too young to drive.";
+}
+
+// Basic while loop
+assign counter = 1;
+assign sum = 0;
+
+output "While loop demonstration:";
+while (counter <= 5) {
+    output "  Iteration " + counter + ": sum = " + sum + " + " + counter;
+    sum = sum + counter;
+    output "  New sum = " + sum;
+    counter = counter + 1;
+}
+
+output "Final sum: " + sum;  // 15
+
+// While loop with complex condition
+assign a = 5;
+assign b = 10;
+
+output "While loop with complex condition:";
+while ((a < b) and (a + b < 20)) {
+    output "  a = " + a + ", b = " + b + ", sum = " + (a + b);
+    a = a + 2;
+}
+
+// Nested while loops
+assign i = 1;
+assign j;
+
+output "Nested while loops:";
+while (i <= 3) {
+    output "Outer loop iteration: " + i;
+    
+    // Reset inner loop counter
+    j = 1;
+    
+    while (j <= i) {  // Inner loop depends on outer loop variable
+        output "  Inner loop iteration: " + j;
+        j = j + 1;
+    }
+    
+    i = i + 1;
+}
+
+// Loop with controlled iterations instead of infinite loop
+assign num = 1;
+assign total = 0;
+assign keepRunning = true;
+
+output "Loop with conditional exit:";
+while (keepRunning) {
+    if (num > 10) {
+        output "  Exit condition met at num = " + num;
+        keepRunning = false;
+    } else {
+        total = total + num;
+        output "  num = " + num + ", total = " + total;
+        num = num + 1;
+    }
+}
+output "  Final total: " + total;  // Should be 55 (sum of 1 to 10)
+
+// Conditional with logical operators
+assign x = 5;
+assign y = 10;
+assign z = 15;
+
+output "Conditional with logical operators:";
+if ((x < y) and (y < z)) {
+    output "  x < y < z"; 
+}
+
+if ((x > y) or (y < z)) {
+    output "  Either x > y or y < z (or both)";  
+}
+
+if (!(x > y)) {
+    output "  It's not the case that x > y";  
+}

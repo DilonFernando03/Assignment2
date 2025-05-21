@@ -79,7 +79,7 @@ class Scanner {
       case '\t': break;
       case '\n' : line++; break; 
       case '"': string(); break;
-      default: if (isDigit(c)) { number(); } else if (isAlpha(c)) { identifier(); } else { Lox.error(line, "Unexpected character."); } break;
+      default: if (isDigit(c)) { number(); } else if (isAlpha(c)) { identifier(); } else { DRS.error(line, "Unexpected character."); } break;
     } 
   }
 
@@ -128,7 +128,7 @@ class Scanner {
     }
 
     if (isAtEnd()) {
-      Lox.error(line, "Unterminated string.");
+      DRS.error(line, "Unterminated string.");
       return;
     }
 

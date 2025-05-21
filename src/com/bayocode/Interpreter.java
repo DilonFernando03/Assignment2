@@ -14,7 +14,7 @@ class Interpreter implements Expr.Visitor<Object>,
   private final java.util.Scanner inputScanner = new java.util.Scanner(System.in);
 
   Interpreter() {
-    globals.define("clock", new LoxCallable() {
+    globals.define("clock", new DrsCallable() {
       @Override
       public int arity() { return 0; }
 
@@ -92,7 +92,7 @@ class Interpreter implements Expr.Visitor<Object>,
 
   @Override
   public Void visitFunctionStmt(Stmt.Function stmt) {
-    LoxFunction function = new LoxFunction(stmt, environment);
+    DrsFunction function = new DrsFunction(stmt, environment);
     environment.define(stmt.name.lexeme, function);
     return null;
   }
@@ -205,7 +205,7 @@ public Void visitInputStmt(Stmt.Input stmt) {
         execute(statement);
       }
     } catch (RuntimeError error) {
-      Lox.runtimeError(error);
+      DRS.runtimeError(error);
     }
   }
 
@@ -339,12 +339,12 @@ public Void visitInputStmt(Stmt.Input stmt) {
       arguments.add(evaluate(argument));
     }
 
-    if (!(callee instanceof LoxCallable)) {
+    if (!(callee instanceof DrsCallable)) {
       throw new RuntimeError(expr.paren,
           "Can only call functions and classes.");
     }
 
-    LoxCallable function = (LoxCallable)callee;
+    DrsCallable function = (DrsCallable)callee;
     if (arguments.size() != function.arity()) {
       throw new RuntimeError(expr.paren, "Expected " +
           function.arity() + " arguments but got " +

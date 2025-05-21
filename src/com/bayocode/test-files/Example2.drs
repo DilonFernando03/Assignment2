@@ -1,0 +1,84 @@
+output "===== VARIABLE DECLARATION AND USAGE =====";
+// Simple variable declaration and initialization
+assign x = 10;
+output "x = " + x;             
+
+// Variable assignment with expressions
+assign y = (5 * 2) + (10 / 2);
+output "y = " + y;             
+
+// Updating variables
+x = x + 5;
+output "x after adding 5: " + x;
+
+// Multiple variables and operations
+assign a = 5;
+assign b = 10;
+assign c = a + b;
+output "a = " + a + ", b = " + b + ", c = a + b = " + c; 
+
+// Variable with arithmetic operations
+assign counter = 1;
+counter = counter + 1;
+output "counter = " + counter;  
+
+counter = counter * 5;
+output "counter * 5 = " + counter;  
+
+// Variables with strings
+assign greeting = "Hello";
+assign name = "World";
+assign message = greeting + ", " + name + "!";
+output message; 
+
+// Updating string variables
+greeting = greeting + "!";
+output "Updated greeting: " + greeting;  
+
+// Variables with boolean values
+assign isActive = true;
+assign isLoggedIn = false;
+assign hasAccess = isActive and isLoggedIn;
+output "isActive = " + isActive;     
+output "isLoggedIn = " + isLoggedIn;  
+output "hasAccess = " + hasAccess;   
+
+// Updating boolean variables
+isLoggedIn = true;
+hasAccess = isActive and isLoggedIn;
+output "hasAccess after login: " + hasAccess;  
+
+// Using variables in expressions
+assign num1 = 10;
+assign num2 = 20;
+assign sum = num1 + num2;
+assign product = num1 * num2;
+assign isGreater = num1 > num2;
+assign isEqual = num1 == num2;
+
+output "sum = " + sum;           
+output "product = " + product;    
+output "isGreater = " + isGreater; 
+output "isEqual = " + isEqual;      
+
+// Type conversions in variable operations
+assign numberStr = "42";
+assign number = 10;
+assign combined = numberStr + number; 
+output "combined = " + combined;
+
+// Floating point variables
+assign floatVal = 3.14;
+assign doubleVal = floatVal * 2;
+output "floatVal = " + floatVal;       
+output "doubleVal = " + doubleVal;      
+
+// Complex expressions with variables
+assign radius = 5;
+assign pi = 3.14159;
+assign area = pi * radius * radius;
+assign circumference = 2 * pi * radius;
+
+output "Circle with radius " + radius + ":";
+output "  Area = " + area;
+output "  Circumference = " + circumference;

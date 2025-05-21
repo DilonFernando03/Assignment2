@@ -1,0 +1,34 @@
+# BUILD INSTRUCTIONS FOR DRS LANGUAGE
+
+## Building the Project
+1. Create a directory structure for the project:
+```
+mkdir -p src/com/bayocode
+```
+
+2. Copy all the .java files into the src/com/bayocode directory
+
+3. To compile files:
+```
+javac -d bin src/com/bayocode/*.java
+```
+
+4. To run a DRS program:
+```
+java -cp bin src.com.bayocode.DRS src/com/bayocode/test-files/(filename).drs
+```
+
+## Example:
+```
+java -cp bin src.com.bayocode.DRS src/com/bayocode/test-files/Example1.drs
+```
+
+5. To use interactive mode (REPL):
+```
+java -cp bin src.com.bayocode.DRS
+```
+
+## Troubleshooting
+If you encounter any class not found errors, ensure that your classpath is correctly set and that all files have been compiled properly.
+
+Note: The GenerateAst tool is used for development purposes to generate AST classes, but is not required for running the interpreter.

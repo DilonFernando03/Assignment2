@@ -8,13 +8,13 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
-public class Lox {
+public class DRS {
     private static final Interpreter interpreter = new Interpreter();
     private static boolean hadError = false;
     static boolean hadRuntimeError = false;
     public static void main(String[] args) throws IOException {
       if (args.length > 1) {
-        System.out.println("Usage: jlox <script>");
+        System.out.println("Usage: jdrs <script>");
         System.exit(64); 
       } else if (args.length == 1) {
         runFile(args[0]);

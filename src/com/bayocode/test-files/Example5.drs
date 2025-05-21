@@ -1,0 +1,69 @@
+output "===== NUMBER GUESSING GAME =====";
+output "I'll think of a number between 1 and 100, and you try to guess it.";
+output "";
+
+// Get player name using input
+input "What's your name? " playerName;
+output "Welcome, " + playerName + "! Let's play.";
+output "";
+
+// Game variables
+assign targetNumber = 42;  // Simplified for demonstration
+assign attemptsRemaining = 5;
+assign hasWon = false;
+
+// Helper function to check guess
+func checkGuess(guess, target) {
+    if (guess == target) {
+        output "Congratulations! You guessed correctly!";
+        return true;
+    } else if (guess < target) {
+        output "Too low. Try a higher number.";
+        return false;
+    } else {
+        output "Too high. Try a lower number.";
+        return false;
+    }
+}
+
+// Main game loop
+output "I'm thinking of a number between 1 and 100.";
+output "You have " + attemptsRemaining + " attempts to guess it.";
+
+while (attemptsRemaining > 0 and !hasWon) {
+    // Get player's guess using input
+    input "Enter your guess (1-100): " playerGuess;
+    
+    // Check the guess
+    hasWon = checkGuess(playerGuess, targetNumber);
+    
+    // Decrement attempts if not correct
+    if (!hasWon) {
+        attemptsRemaining = attemptsRemaining - 1;
+        if (attemptsRemaining > 0) {
+            output "Attempts remaining: " + attemptsRemaining;
+        } else {
+            output "Sorry, you've run out of attempts. The number was " + targetNumber + ".";
+        }
+    }
+}
+
+// Game summary
+output "";
+output "===== GAME SUMMARY =====";
+output "Player: " + playerName;
+if (hasWon) {
+    output "Result: Victory!";
+    output "You guessed the number with " + attemptsRemaining + " attempts remaining.";
+} else {
+    output "Result: Defeat";
+    output "Better luck next time!";
+}
+
+input "Would you like to play again? (yes/no): " playAgain;
+
+if (playAgain == "yes") {
+    output "Great! Refresh to start a new game.";
+} else {
+    output "Thanks for playing!";
+}

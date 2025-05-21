@@ -1,0 +1,156 @@
+output "===== FUNCTIONS DEMONSTRATION =====";
+
+// Simple function with no parameters
+func sayHello() {
+    output "Hello, world!";
+    return "Hello returned";
+}
+
+// Function with parameters
+func add(a, b) {
+    return a + b;
+}
+
+// Function with conditional logic
+func max(a, b) {
+    if (a > b) {
+        return a;
+    } else {
+        return b;
+    }
+}
+
+// Recursive function
+func factorial(n) {
+    if (n <= 1) {
+        return 1;
+    }
+    return n * factorial(n - 1);
+}
+
+// Function with default parameter handling
+func greet(name, timeOfDay) {
+    if (timeOfDay == null) {
+        timeOfDay = "day";
+    }
+    
+    if (timeOfDay == "morning") {
+        return "Good morning, " + name + "!";
+    } else if (timeOfDay == "afternoon") {
+        return "Good afternoon, " + name + "!";
+    } else if (timeOfDay == "evening") {
+        return "Good evening, " + name + "!";
+    } else {
+        return "Hello, " + name + "!";
+    }
+}
+
+// Function that uses other functions
+func calculateArea(shape, a, b) {
+    if (shape == "rectangle") {
+        return a * b;
+    } else if (shape == "triangle") {
+        return 0.5 * a * b;
+    } else if (shape == "circle") {
+        return 3.14159 * a * a;  // a is radius
+    } else {
+        output "Unknown shape: " + shape;
+        return 0;
+    }
+}
+
+// Higher-order function that takes a calculation type
+func calculate(operation, a, b) {
+    if (operation == "add") {
+        return add(a, b);
+    } else if (operation == "subtract") {
+        return a - b;
+    } else if (operation == "multiply") {
+        return a * b;
+    } else if (operation == "divide") {
+        if (b == 0) {
+            output "Error: Division by zero!";
+            return null;
+        }
+        return a / b;
+    } else if (operation == "power") {
+        assign result = 1;
+        assign i = 0;
+        while (i < b) {
+            result = result * a;
+            i = i + 1;
+        }
+        return result;
+    } else {
+        output "Unknown operation: " + operation;
+        return null;
+    }
+}
+
+// Function calls
+
+// Call simple function
+output "Calling sayHello():";
+assign helloResult = sayHello();
+output "Return value: " + helloResult;
+output "";
+
+// Call function with parameters
+output "Calling add(5, 3):";
+assign sum = add(5, 3);
+output "Result: " + sum;  // 8
+output "";
+
+// Call function with expressions as arguments
+output "Calling add(2 * 4, 3 + 5):";
+assign result = add(2 * 4, 3 + 5);
+output "Result: " + result;  // 16
+output "";
+
+// Call max function
+output "Calling max(10, 5):";
+assign maxVal = max(10, 5);
+output "Result: " + maxVal;  // 10
+output "";
+
+// Call recursive function
+output "Calling factorial(5):";
+assign fact = factorial(5);
+output "Result: " + fact;  // 120
+output "";
+
+// Call function with default parameter
+output "Calling greet('Alice', 'morning'):";
+assign greeting = greet("Alice", "morning");
+output "Result: " + greeting;  // "Good morning, Alice!"
+
+output "Calling greet('Bob', null):";
+assign defaultGreeting = greet("Bob", null);
+output "Result: " + defaultGreeting;  // "Hello, Bob!"
+output "";
+
+// Call function that uses other functions
+output "Calling calculateArea('rectangle', 5, 4):";
+assign rectArea = calculateArea("rectangle", 5, 4);
+output "Result: " + rectArea;  // 20
+
+output "Calling calculateArea('circle', 3, null):";
+assign circleArea = calculateArea("circle", 3, null);
+output "Result: " + circleArea;  // ~28.27
+output "";
+
+// Call higher-order function
+output "Calling calculate('add', 10, 5):";
+assign calcResult = calculate("add", 10, 5);
+output "Result: " + calcResult;  // 15
+
+output "Calling calculate('power', 2, 8):";
+assign powerResult = calculate("power", 2, 8);
+output "Result: " + powerResult;  // 256
+output "";
+
+// Using function results in expressions
+output "Using function results in expressions:";
+output "add(5, 3) * 2 = " + (add(5, 3) * 2);  // 16
+output "max(add(1, 2), add(3, 4)) = " + max(add(1, 2), add(3, 4));  // 7
+output "";
