@@ -1,7 +1,7 @@
 # DRS LANGUAGE USER GUIDE
 
 ## Introduction
-DRS (Dilon Runtime Script) is a programming language implemented as an interpreter in Java. This language supports arithmetic operations, boolean logic, text manipulation, variables, control flow, and functions.
+DRS (Dilon Runtime Script) is a programming language implemented as an interpreter in Java. This language supports arithmetic operations, boolean logic, text manipulation, variables, control flow, and functions. Github link to this project repository is https://github.com/DilonFernando03/Assignment2 
 
 ## File Extension
 DRS scripts use the `.drs` file extension.
